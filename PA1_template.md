@@ -1,9 +1,4 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 ## Introduction
 
@@ -25,12 +20,25 @@ The dataset is stored in a comma-separated-value (CSV) file and there are a tota
 
 For our calculations, we'll load the activity data from the extracted activity.csv file into a data frame.  I've loaded the dplyr library which will be used later on.
 
-```{r echo=TRUE,  results="hide"}
+
+```r
 activityData = read.csv('activity.csv', header=TRUE)
 
 # load the library dplyr
 library(dplyr)
+```
 
+```
+## 
+## Attaching package: 'dplyr'
+## 
+## The following objects are masked from 'package:stats':
+## 
+##     filter, lag
+## 
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
 ```
 
 
@@ -38,47 +46,76 @@ library(dplyr)
 ## What is mean total number of steps taken per day?
 
 First, we'll summarize the total number of steps taken per day.
-```{r echo=TRUE}
+
+```r
 stepsPerDay <-aggregate(steps~date, data=activityData, sum, na.rm=TRUE)
 ```
 
 
 From this summarization we'll create a histogram of the total number of steps taken each day.
-```{r echo=TRUE}
+
+```r
 hist(stepsPerDay$steps, breaks=10, xlab='Total Number of Steps', main='Steps per Day')
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png) 
+
 
 The mean and median of the total number of steps taken per day is as follows.
-```{r echo=TRUE}
+
+```r
 mean(stepsPerDay$steps)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 median(stepsPerDay$steps)
+```
+
+```
+## [1] 10765
 ```
 
 
 ## What is the average daily activity pattern?
 The following is a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
-```{r echo=TRUE}
+
+```r
 stepsPerInterval <-aggregate(steps ~ interval, data = activityData, mean, na.rm = TRUE)
 
 plot(steps ~ interval, data = stepsPerInterval, type = "l", main = "Average steps taken across all days by interval")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png) 
+
 Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
-```{r echo=TRUE}
+
+```r
 stepsPerInterval[which.max(stepsPerInterval$steps), ]$interval
 ```
-The 5-minute interval with the maximum number of steps is **`r stepsPerInterval[which.max(stepsPerInterval$steps), ]$interval`**.
+
+```
+## [1] 835
+```
+The 5-minute interval with the maximum number of steps is **835**.
 
 ## Imputing missing values
 
 There are a number of days/intervals where there are missing values (coded as NA). The presence of missing days may introduce bias into some calculations or summaries of the data.
 
 1. Calculate and report the total number of missing values in the dataset
-```{r echo=TRUE}
+
+```r
 sum(is.na(activityData$steps))     
 ```
-The total number of rows with NAs is **`r sum(is.na(activityData$steps))`**.
+
+```
+## [1] 2304
+```
+The total number of rows with NAs is **2304**.
 
 2. Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
 
@@ -88,8 +125,8 @@ The total number of rows with NAs is **`r sum(is.na(activityData$steps))`**.
 
 
 3. Create a new dataset that is equal to the original dataset but with the missing data filled in.
-```{r echo=TRUE, results="hide"}
 
+```r
 # create a new data frame with the mean for each interval
 intervalMean <- aggregate(steps~interval, data=activityData, FUN=mean, na.rm=TRUE)
 intervalMean$steps <-as.integer(intervalMean$steps)
@@ -111,7 +148,6 @@ activityDataNAsFilled$steps.x = mapply(replaceNAs,activityDataNAsFilled$steps.x,
 # drop the extra column and rename the original steps column
 activityDataNAsFilled$steps.y <-NULL
 names(activityDataNAsFilled)[names(activityDataNAsFilled)=="steps.x"] <-"steps"
-     
 ```
 
 
@@ -120,18 +156,35 @@ names(activityDataNAsFilled)[names(activityDataNAsFilled)=="steps.x"] <-"steps"
 
 *From the resulting histograms it does not appear that imputing missing data has a significant impact on the analysis.*
 
-```{r echo=TRUE}
+
+```r
 hist(stepsPerDay$steps, 
           breaks=10, 
           xlab='Steps per Day',
           main='Missing values'
      )
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-9-1.png) 
+
+```r
 mean(stepsPerDay$steps)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 median(stepsPerDay$steps)
 ```
 
-```{r echo=TRUE}
+```
+## [1] 10765
+```
 
+
+```r
 mergedStepsPerDay <-aggregate(steps~date, 
                         data=activityDataNAsFilled, 
                         sum, 
@@ -144,8 +197,24 @@ hist(mergedStepsPerDay$steps,
           xlab='Steps per Day',
           main='Missing values replaced with mean for interval'
      )
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-10-1.png) 
+
+```r
 mean(mergedStepsPerDay$steps)
+```
+
+```
+## [1] 10749.77
+```
+
+```r
 median(mergedStepsPerDay$steps)
+```
+
+```
+## [1] 10641
 ```
 
 
@@ -155,7 +224,8 @@ median(mergedStepsPerDay$steps)
 For this part the weekdays() function may be of some help here. Use the dataset with the filled-in missing values for this part.
 
 1. Create a new factor variable in the dataset with two levels - "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
-```{r echo=TRUE}
+
+```r
 activityDataNAsFilled$day = ifelse(as.POSIXlt(as.Date(activityDataNAsFilled$date))$wday%%6==0,"weekend","weekday")
 
 activityDataNAsFilled$day=factor(activityDataNAsFilled$day,levels=c("weekday","weekend"))
@@ -164,8 +234,8 @@ activityDataNAsFilled$day=factor(activityDataNAsFilled$day,levels=c("weekday","w
 
 2. Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data.
 
-```{r echo=TRUE}
 
+```r
 stepsByDayandWeekpart=aggregate(steps~interval + day , activityDataNAsFilled, mean)
 
 library(lattice)
@@ -175,4 +245,6 @@ xyplot(steps ~ interval | factor(day),
        aspect = 1/2,
        type = "l")
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-12-1.png) 
 
